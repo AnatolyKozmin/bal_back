@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15-alpine
+    container_name: bal_bot_postgres
+    environment:
+      POSTGRES_DB: bal_bot_db
+      POSTGRES_USER: bal_bot_user
+      POSTGRES_PASSWORD: bal_bot_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - bal_bot_network
+    restart: unless-stopped
+
+  # Redis для кэширования (опционально)
+  redis:
+    image: redis:7-alpine
+    container_name: bal_bot_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - bal_bot_network
+    restart: unless-stopped
+
+  # Основное приложение
+  app:
+    build: .
+    container_name: bal_bot_app
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://bal_bot_user:bal_bot_password@postgres:5432/bal_bot_db
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - MINI_APP_URL=${MINI_APP_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - bal_bot_network
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+  # Nginx для проксирования (опционально)
+  nginx:
+    image: nginx:alpine
+    container_name: bal_bot_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+    networks:
+      - bal_bot_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  bal_bot_network:
+    driver: bridge
