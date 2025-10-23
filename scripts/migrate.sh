@@ -15,7 +15,7 @@ sleep 10
 
 # Инициализируем базу данных
 echo "🔄 Создание таблиц в базе данных..."
-docker-compose exec app python scripts/init_db.py
+docker-compose exec app python scripts/simple_init.py
 
 if [ $? -eq 0 ]; then
     echo "✅ База данных успешно инициализирована"

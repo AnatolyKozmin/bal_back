@@ -52,6 +52,10 @@ test:
 migrate:
 	./scripts/migrate.sh
 
+# Простая инициализация БД
+init-db:
+	docker-compose exec app python scripts/simple_init.py
+
 # Полное развертывание
 deploy:
 	./scripts/deploy.sh
