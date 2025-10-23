@@ -103,7 +103,7 @@ railway:
 	railway up
 
 # Статус Railway
-status:
+railway-status:
 	@if command -v railway &> /dev/null; then \
 		railway status; \
 	else \
