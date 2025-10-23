@@ -70,9 +70,6 @@ async def run_async_migrations():
     and associate a connection with the context.
 
     """
-    configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = get_url()
-    
     # Создаем асинхронный движок
     connectable = create_async_engine(get_url())
 
